@@ -58,21 +58,3 @@ module.exports = function callLocally(opts, callback) {
 
     setImmediate(callback);
 };
-
-
-
-
-
-// This is requiring the package at the current root (cwd), assuming
-// that the user is me actually developing grandma.
-//function requireDev() {
-//    // If we are not in this super-special env, move on.
-//    if (process.env.NODE_ENV !== 'dev-test') {
-//        return false;
-//    }
-//
-//    var resolvedUri = path.posix.join(BASE, CLI);
-//    return tryRequire(resolvedUri);
-//}
-
-

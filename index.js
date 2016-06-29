@@ -5,9 +5,30 @@ var util = require('util');
 
 var BASE = process.cwd();
 
+/**
+ * @param {object} opts The options object.
+ * @param {string} opts.name The name of the module.
+ * @param {string} [opts.filepath=bin\cli.js] The relative path inside the module to the file to require.
+ * @param {function} done The callback to call when the module is required. This will provide an error as
+ * the first parameter if the module cannot be found.
+ */
 module.exports = function callLocally(opts, callback) {
     var NAME = opts.name;
-    var CLI = path.posix.join('bin', 'cli.js');
+    var CLI = (function(relPath) {
+        if (path.isAbsolute(relPath)) {
+            return relPath;
+        }
+        
+        if (relPath && typeof relPath === 'string') {
+            return path.posix.format(path.parse(relPath));
+        } else {
+            return path.posix.join('bin', 'cli.js');
+        }
+        
+    }(opts.filepath));
+    
+    var success = false;
+    var mod;
 
     function tryRequire(route) {
         try {
@@ -19,7 +40,7 @@ module.exports = function callLocally(opts, callback) {
 
         // Do not try/catch the actual require. If the module itself actually
         // throws, we still want to see that error.
-        require(route);
+        mod = require(route);
         return true;
     }
 
@@ -36,8 +57,6 @@ module.exports = function callLocally(opts, callback) {
         var resolvedUri = './cli.js';
         return tryRequire(resolvedUri);
     }
-
-    var success = false;
 
     var tasks = [ requireLocal ];
     
@@ -56,5 +75,5 @@ module.exports = function callLocally(opts, callback) {
         return setImmediate(callback, err);
     }
 
-    setImmediate(callback);
+    setImmediate(callback, null, mod);
 };
